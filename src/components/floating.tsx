@@ -1,4 +1,6 @@
-import { FloatingDoc } from "./floating-doc";
+// src/components/floating.tsx
+import React from "react";
+import { FloatingDoc, FloatingDocItem } from "./floating-doc";
 import {
   IconBrandGithub,
   IconBrandX,
@@ -8,59 +10,19 @@ import {
   IconTerminal2,
 } from "@tabler/icons-react";
 
+export const Floating: React.FC = () => {
+  const links: FloatingDocItem[] = [
+    { title: "Home", icon: <IconHome />, href: "#" },
+    { title: "Products", icon: <IconTerminal2 />, href: "#" },
+    { title: "Components", icon: <IconNewSection />, href: "#" },
+    { title: "Changelog", icon: <IconExchange />, href: "#" },
+    { title: "Twitter", icon: <IconBrandX />, href: "#" },
+    { title: "GitHub", icon: <IconBrandGithub />, href: "#" },
+  ];
 
-
-export function Floating() {
-    const links = [
-      {
-        title: "Home",
-        icon: (
-          <IconHome className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-        ),
-        href: "#",
-      },
-
-      {
-        title: "Products",
-        icon: (
-          <IconTerminal2 className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-        ),
-        href: "#",
-      },
-      {
-        title: "Components",
-        icon: (
-          <IconNewSection className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-        ),
-        href: "#",
-      },
-      {
-        title: "Changelog",
-        icon: (
-          <IconExchange className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-        ),
-        href: "#",
-      },
-
-      {
-        title: "Twitter",
-        icon: (
-          <IconBrandX className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-        ),
-        href: "#",
-      },
-      {
-        title: "GitHub",
-        icon: (
-          <IconBrandGithub className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-        ),
-        href: "#",
-      },
-    ];
-
-    return (
-        <div className="h-[6rem] flex items-center justify-center w-full">
-            <FloatingDoc items={links} mobileClassName="translate-y-20" />
-        </div>
-    )
-}
+  return (
+    <div className="h-[6rem] flex items-center justify-center w-full">
+      <FloatingDoc items={links} mobileClassName="translate-y-20" />
+    </div>
+  );
+};

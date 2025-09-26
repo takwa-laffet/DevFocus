@@ -10,13 +10,12 @@ import { supabase } from "./supabaseClient";
 Quill.register("modules/imageDrop", ImageDrop);
 Quill.register("modules/imageResize", ImageResize);
 
-export default function WordLikeNotesManager() {
+export default function GlassNotesBoard() {
   const [notes, setNotes] = useState<any[]>([]);
   const [selectedNote, setSelectedNote] = useState<any>(null);
   const [noteContent, setNoteContent] = useState("");
   const editorRef = useRef<any>(null);
 
-  // Load notes from Supabase on mount
   useEffect(() => {
     const fetchNotes = async () => {
       const {
@@ -30,15 +29,12 @@ export default function WordLikeNotesManager() {
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        setNotes(data);
-      }
+      if (!error && data) setNotes(data);
     };
 
     fetchNotes();
   }, []);
 
-  // Save or Update note
   const handleSaveNote = async () => {
     if (!noteContent.trim()) return;
 
@@ -56,9 +52,7 @@ export default function WordLikeNotesManager() {
         .select();
 
       if (!error && data) {
-        setNotes((prev) =>
-          prev.map((n) => (n.id === selectedNote.id ? data[0] : n))
-        );
+        setNotes((prev) => prev.map((n) => (n.id === selectedNote.id ? data[0] : n)));
       }
     } else {
       const { data, error } = await supabase
@@ -66,34 +60,25 @@ export default function WordLikeNotesManager() {
         .insert([{ content: noteContent, user_id: session.user.id }])
         .select();
 
-      if (!error && data) {
-        setNotes((prev) => [data[0], ...prev]);
-      }
+      if (!error && data) setNotes((prev) => [data[0], ...prev]);
     }
 
     setSelectedNote(null);
     setNoteContent("");
   };
 
-  // Select note
   const handleSelectNote = (note: any) => {
     setSelectedNote(note);
     setNoteContent(note.content);
   };
 
-  // Delete note
   const handleDeleteNote = async (id: string) => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) return;
 
-    const { error } = await supabase
-      .from("notes")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", session.user.id);
-
+    const { error } = await supabase.from("notes").delete().eq("id", id).eq("user_id", session.user.id);
     if (!error) {
       setNotes((prev) => prev.filter((n) => n.id !== id));
       if (selectedNote?.id === id) {
@@ -103,7 +88,6 @@ export default function WordLikeNotesManager() {
     }
   };
 
-  // Export PDF
   const handleExportPDF = () => {
     if (!noteContent.trim()) return;
     const element = document.createElement("div");
@@ -123,10 +107,7 @@ export default function WordLikeNotesManager() {
       ["clean"],
     ],
     imageDrop: true,
-    imageResize: {
-      parchment: Quill.import("parchment"),
-      modules: ["Resize", "DisplaySize"],
-    },
+    imageResize: { parchment: Quill.import("parchment"), modules: ["Resize", "DisplaySize"] },
   };
 
   return (
@@ -203,10 +184,7 @@ export default function WordLikeNotesManager() {
                 style={{
                   padding: "8px",
                   borderRadius: "8px",
-                  background:
-                    selectedNote?.id === note.id
-                      ? "rgba(255,255,255,0.15)"
-                      : "rgba(255,255,255,0.05)",
+                  background: selectedNote?.id === note.id ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)",
                   cursor: "pointer",
                   transition: "0.2s",
                   overflow: "hidden",
@@ -214,8 +192,7 @@ export default function WordLikeNotesManager() {
                   whiteSpace: "nowrap",
                 }}
               >
-                {note.content.replace(/<[^>]+>/g, "").slice(0, 28) ||
-                  "Untitled…"}
+                {note.content.replace(/<[^>]+>/g, "").slice(0, 28) || "Untitled…"}
               </div>
             ))}
           </div>
@@ -233,90 +210,25 @@ export default function WordLikeNotesManager() {
             gap: "12px",
           }}
         >
-          <h3 style={{ margin: 0, fontWeight: 500 }}>
-            {selectedNote ? "✏️ Edit Note" : "📝 New Note"}
-          </h3>
-          <div
-            style={{
-              flexGrow: 1,
-              borderRadius: "12px",
-              overflow: "hidden",
-            }}
-          >
-            <ReactQuill
-              ref={editorRef}
-              theme="snow"
-              value={noteContent}
-              onChange={setNoteContent}
-              modules={modules}
-              style={{
-                height: "100%",
-                border: "none",
-              }}
-            />
+          <h3 style={{ margin: 0, fontWeight: 500 }}>{selectedNote ? "✏️ Edit Note" : "📝 New Note"}</h3>
+          <div style={{ flexGrow: 1, borderRadius: "12px", overflow: "hidden" }}>
+            <ReactQuill ref={editorRef} theme="snow" value={noteContent} onChange={setNoteContent} modules={modules} style={{ height: "100%", border: "none" }} />
           </div>
-          <style>
-            {`
-              .ql-container {
-                border: none !important;
-              }
-              .ql-toolbar {
-                border: none !important;
-              }
-              .ql-editor {
-                border: none !important;
-                outline: none !important;
-                min-height: 300px;
-                color: black !important;
-              }
-            `}
-          </style>
+          <style>{`
+            .ql-container { border: none !important; }
+            .ql-toolbar { border: none !important; }
+            .ql-editor { border: none !important; outline: none !important; min-height: 300px; color: black !important; }
+          `}</style>
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-            <button
-              onClick={handleSaveNote}
-              style={{
-                padding: "8px 14px",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                background: "#4CAF50",
-                color: "#fff",
-                fontWeight: 500,
-                transition: "0.2s",
-              }}
-            >
+            <button onClick={handleSaveNote} style={{ padding: "8px 14px", borderRadius: "8px", border: "none", cursor: "pointer", background: "#4CAF50", color: "#fff", fontWeight: 500, transition: "0.2s" }}>
               {selectedNote ? "💾 Save" : "➕ Add"}
             </button>
             {selectedNote && (
-              <button
-                onClick={() => handleDeleteNote(selectedNote.id)}
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: "8px",
-                  border: "none",
-                  cursor: "pointer",
-                  background: "#F44336",
-                  color: "#fff",
-                  fontWeight: 500,
-                  transition: "0.2s",
-                }}
-              >
+              <button onClick={() => handleDeleteNote(selectedNote.id)} style={{ padding: "8px 14px", borderRadius: "8px", border: "none", cursor: "pointer", background: "#F44336", color: "#fff", fontWeight: 500, transition: "0.2s" }}>
                 🗑️ Delete
               </button>
             )}
-            <button
-              onClick={handleExportPDF}
-              style={{
-                padding: "8px 14px",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                background: "#2196F3",
-                color: "#fff",
-                fontWeight: 500,
-                transition: "0.2s",
-              }}
-            >
+            <button onClick={handleExportPDF} style={{ padding: "8px 14px", borderRadius: "8px", border: "none", cursor: "pointer", background: "#2196F3", color: "#fff", fontWeight: 500, transition: "0.2s" }}>
               📄 Export PDF
             </button>
           </div>

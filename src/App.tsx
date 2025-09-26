@@ -10,6 +10,7 @@ import Signup from "./components/signup";
 import LogoutButton from "./components/LogoutButton";
 import { supabase } from "./components/supabaseClient";
 
+
 function App() {
   const [session, setSession] = useState<any>(null);
 

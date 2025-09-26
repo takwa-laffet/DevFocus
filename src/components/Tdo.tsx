@@ -1,25 +1,47 @@
 import { useEffect, useState } from "react";
-import { supabase } from "./supabaseClient"; // make sure you have supabaseClient.js configured
+import { supabase } from "./supabaseClient"; // make sure supabaseClient is configured
+
+// Types
+interface Task {
+  id: number;
+  text: string;
+  due_date: string;
+  completed: boolean;
+  color: string;
+}
+
+interface Category {
+  id: number;
+  title: string;
+  tasks: Task[];
+}
+
+interface EditingTask {
+  catId: number;
+  taskId: number;
+}
 
 export default function GlassTodoBoard() {
-  const [categories, setCategories] = useState([]);
-  const [addingTaskCat, setAddingTaskCat] = useState(null);
-  const [editingTask, setEditingTask] = useState(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [addingTaskCat, setAddingTaskCat] = useState<number | null>(null);
+  const [editingTask, setEditingTask] = useState<EditingTask | null>(null);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskDate, setNewTaskDate] = useState("");
   const [newTaskColor, setNewTaskColor] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategoryTitle, setNewCategoryTitle] = useState("");
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(null);
+  const [editingCategory, setEditingCategory] = useState<number | null>(null);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState<number | null>(null);
 
   const colors = ["#F44336", "#FF9800", "#FFEB3B", "#4CAF50", "#2196F3", "#9C27B0", "#795548"];
 
   // Fetch categories + tasks
   const fetchData = async () => {
-    const { data: cats, error } = await supabase.from("categories").select("id, title, tasks(id, text, due_date, completed, color)");
+    const { data: cats, error } = await supabase
+      .from("categories")
+      .select("id, title, tasks(id, text, due_date, completed, color)");
     if (error) console.error(error);
-    else setCategories(cats);
+    else setCategories(cats as Category[]);
   };
 
   useEffect(() => {
@@ -27,7 +49,7 @@ export default function GlassTodoBoard() {
   }, []);
 
   // Add/Edit Task
-  const handleAddOrEditTask = async (catId) => {
+  const handleAddOrEditTask = async (catId: number) => {
     if (!newTaskText.trim() || !newTaskDate) return;
 
     if (editingTask) {
@@ -52,26 +74,26 @@ export default function GlassTodoBoard() {
   };
 
   // Delete Task
-  const handleDeleteTask = async (taskId) => {
+  const handleDeleteTask = async (taskId: number) => {
     const { error } = await supabase.from("tasks").delete().eq("id", taskId);
     if (error) console.error(error);
     fetchData();
   };
 
   // Toggle Task Completion
-  const toggleTask = async (taskId, completed) => {
+  const toggleTask = async (taskId: number, completed: boolean) => {
     const { error } = await supabase.from("tasks").update({ completed: !completed }).eq("id", taskId);
     if (error) console.error(error);
     fetchData();
   };
 
   // Drag & Drop
-  const handleDragStart = (e, task, fromCat) => {
-    e.dataTransfer.setData("taskId", task.id);
-    e.dataTransfer.setData("fromCat", fromCat.id);
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, task: Task, fromCat: Category) => {
+    e.dataTransfer.setData("taskId", task.id.toString());
+    e.dataTransfer.setData("fromCat", fromCat.id.toString());
   };
 
-  const handleDrop = async (e, toCat) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, toCat: Category) => {
     e.preventDefault();
     const taskId = parseInt(e.dataTransfer.getData("taskId"));
     const fromCatId = parseInt(e.dataTransfer.getData("fromCat"));
@@ -82,7 +104,7 @@ export default function GlassTodoBoard() {
   };
 
   // Delete Category
-  const handleDeleteCategory = async (catId) => {
+  const handleDeleteCategory = async (catId: number) => {
     const { error } = await supabase.from("categories").delete().eq("id", catId);
     if (error) console.error(error);
     setCategoryMenuOpen(null);
@@ -90,7 +112,7 @@ export default function GlassTodoBoard() {
   };
 
   // Save/Edit Category
-  const handleSaveCategory = async (catId) => {
+  const handleSaveCategory = async (catId: number) => {
     if (!newCategoryTitle.trim()) return;
     const { error } = await supabase.from("categories").update({ title: newCategoryTitle }).eq("id", catId);
     if (error) console.error(error);
